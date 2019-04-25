@@ -5,10 +5,10 @@ services:
     image: mongo
     restart: always
     ports:
-      - ${MONGODB_PORT}:27017
+      - 27018:27017
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASS}
+      MONGO_INITDB_ROOT_USERNAME: sa
+      MONGO_INITDB_ROOT_PASSWORD: sa
     networks:
       - backend
 networks:
