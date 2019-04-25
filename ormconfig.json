@@ -1,7 +1,10 @@
 {
   "type": "mongodb",
   "host": "localhost",
-  "database": "test",
+  "username": "sa",
+  "password": "sa",
+  "port": 27018,
+  "database": "admin",
   "synchronize": true,
   "logging": false,
   "entities": [
