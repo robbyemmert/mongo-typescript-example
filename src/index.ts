@@ -1,6 +1,7 @@
-import {createConnection} from "typeorm";
+import {createConnection, ObjectID} from "typeorm";
 import {Post} from "./entity/Post";
 import {Category} from "./entity/Category";
+import {ObjectID as MongoObjectID} from 'mongodb'
 
 // connection settings are in the "ormconfig.json" file
 createConnection().then(async connection => {
@@ -24,18 +25,43 @@ createConnection().then(async connection => {
 
     const loadedById = await connection.mongoManager.findOne(Post, {
         _id: postId
-    } as any)
+    } as any) // Shouldn't have to cast this, and it should be `id` not `_id`
+
+    // This returns undefined
+    const rawId = postId.toHexString()
+    const loadedByRawId = await connection.mongoManager.findOne(Post, {
+        _id: rawId
+    } as any) // Shouldn't have to cast this.
+    console.log('Loaded with raw ID:', !!loadedByRawId)
+
+    // This throws an error: TypeError: typeorm_1.ObjectID is not a constructor
+    // const reloaded = await connection.mongoManager.findOne(Post, {
+    //     _id: new ObjectID(rawId)
+    // } as any) // Shouldn't have to cast this.
+    // console.log('Reloaded with ObjectID:', !!reloaded)
+
+    // This returns undefined
+    const reloadedByObjectId = await connection.mongoManager.findOne(Post, {
+        _id: new MongoObjectID(rawId)
+    } as any) // Shouldn't have to cast this.
+    console.log('Reloaded with Mongo ObjectID:', !!reloadedByObjectId)
 
     // This returns undefined
     const willNotload = await connection.mongoManager.findOne(Post, {
         id: postId
     })
-    console.log('This should not be undefined:', willNotload)
+    console.log('Loaded with ObjectID from db:', !!willNotload)
 
     // This returns a type error
     // const typeError = await connection.mongoManager.findOne(Post, {
     //     _id: postId
     // })
+
+    // Let's try editing a post and saving it again
+    loadedById.title = 'Hey I edited this'
+    const saved = await connection.mongoManager.save(loadedById)
+    console.log('Saved post', saved)
+    console.log('Do the ids match?', loadedById.id === saved.id ? 'Yes! it is saving properly' : 'No, something really odd is happening')
 
     console.log("Loaded posts from the database: ", loadedPosts);
     console.log('loaded by id', loadedById)
